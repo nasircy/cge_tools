@@ -21,6 +21,7 @@ function createRow(): EnvelopeRow {
 
 export default function EnvelopeForm() {
   const [eventName, setEventName] = useState("");
+  const [competitionName, setCompetitionName] = useState("");
   const [rows, setRows] = useState<readonly EnvelopeRow[]>(() => [createRow()]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +30,7 @@ export default function EnvelopeForm() {
 
   useEffect(() => {
     setOutput(null);
-  }, [eventName, rows]);
+  }, [eventName, competitionName, rows]);
 
   const updateRow = (id: string, field: Exclude<keyof EnvelopeRow, "id">, value: string): void => {
     setRows((current) =>
@@ -44,6 +45,7 @@ export default function EnvelopeForm() {
     try {
       const parsed = envelopePayloadSchema.safeParse({
         eventName,
+        competitionName,
         recipients: rows.map((row) => ({ name: row.name, award: row.award })),
       });
       if (!parsed.success) {
@@ -99,16 +101,17 @@ export default function EnvelopeForm() {
         </div>
       ) : null}
 
-      <Card title="基本資料" subtitle="科目／活動名稱會套用到每一份紅包袋">
-        <div className="grid gap-4">
+      <Card title="基本資料" subtitle="活動名稱與比賽子項目會套用到每一份紅包袋">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field
-            label="科目／活動名稱"
+            label="活動總名稱"
             type="text"
             value={eventName}
             onChange={(event) => setEventName(event.target.value)}
             placeholder="列印在紅包袋上的科目或活動名稱"
             hint="可自由修改，會直接套用到紅包袋"
           />
+          <Field label="比賽子項目（選填）" value={competitionName} onChange={(event) => setCompetitionName(event.target.value)} placeholder="例如：散文創作獎" hint="文學季可填八項比賽之一；一般活動可留白" />
         </div>
       </Card>
 
@@ -120,7 +123,7 @@ export default function EnvelopeForm() {
             type="button"
             variant="secondary"
             size="sm"
-            disabled={rows.length >= 100}
+            disabled={rows.length >= 200}
             onClick={() => setRows((current) => [...current, createRow()])}
           >
             新增一列
@@ -173,10 +176,7 @@ export default function EnvelopeForm() {
         </Button>
       </div>
 
-      <Card title="Word 檔案" subtitle="保留範例指定字型與版面，不另外加線條或邊框">
-        <p className="text-sm leading-7 text-[var(--ink-muted)]">原稿字型：華康行書體。請使用已安裝該字型的 Word 開啟；工具不會擅自換字型。需要 PDF 時，請在 Word 中選擇「另存為 PDF」。</p>
-        {output && <p role="status" className="mt-3 font-medium">已產生 {rows.length} 份紅包袋，可下載 Word 檔案。</p>}
-      </Card>
+      {output && <p role="status" className="font-medium">已產生 {rows.length} 份紅包袋，可下載 Word 檔案。</p>}
     </fieldset>
   );
 }

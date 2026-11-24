@@ -1,5 +1,6 @@
 import PizZip from "pizzip";
 import { certificateLayout } from "./layouts/certificate";
+import { literatureCertificateLayout } from "./layouts/literature-certificate";
 import { envelopeLayout } from "./layouts/envelope";
 import { formatRocDate } from "./roc-date";
 import type { CertificatePayload, EnvelopePayload } from "./schemas";
@@ -268,15 +269,22 @@ function generateDocx(zip: PizZip): Uint8Array {
   return zip.generate({ type: "uint8array", compression: "DEFLATE" });
 }
 
-export function createLayoutPackage(kind: "certificate" | "envelope"): PizZip {
+export function createLayoutPackage(kind: "certificate" | "literature-certificate" | "envelope"): PizZip {
   const zip = new PizZip();
-  const font = kind === "certificate" ? "標楷體" : "華康行書體";
+  const font = "標楷體";
   zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/fontTable.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"/></Types>`);
   zip.file("_rels/.rels", `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
   zip.file("word/_rels/document.xml.rels", `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdFonts" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/></Relationships>`);
   zip.file("word/styles.xml", `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="${font}" w:eastAsia="${font}" w:hAnsi="${font}" w:cs="${font}"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="zh-TW" w:eastAsia="zh-TW"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>`);
   zip.file("word/fontTable.xml", `<w:fonts xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:font w:name="${font}"/></w:fonts>`);
-  zip.file("word/document.xml", kind === "certificate" ? certificateLayout : envelopeLayout);
+  if (kind !== "certificate") {
+    zip.file("word/styles.xml", `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:eastAsia="新細明體" w:hAnsi="Calibri" w:cs="Times New Roman"/><w:kern w:val="2"/><w:sz w:val="24"/><w:szCs w:val="22"/><w:lang w:val="en-US" w:eastAsia="zh-TW" w:bidi="ar-SA"/></w:rPr></w:rPrDefault><w:pPrDefault/></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/><w:pPr><w:widowControl w:val="0"/></w:pPr></w:style></w:styles>`);
+    zip.file("word/settings.xml", `<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:defaultTabStop w:val="480"/><w:characterSpacingControl w:val="compressPunctuation"/><w:compat><w:spaceForUL/><w:balanceSingleByteDoubleByteWidth/><w:doNotLeaveBackslashAlone/><w:ulTrailSpace/><w:doNotExpandShiftReturn/><w:adjustLineHeightInTable/><w:useFELayout/><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`);
+    zip.file("word/_rels/document.xml.rels", zip.file("word/_rels/document.xml.rels")!.asText().replace("</Relationships>", `<Relationship Id="rIdSettings" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/></Relationships>`));
+    zip.file("[Content_Types].xml", zip.file("[Content_Types].xml")!.asText().replace("</Types>", `<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/></Types>`));
+    zip.file("word/fontTable.xml", `<w:fonts xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:font w:name="標楷體"><w:altName w:val="DFKai-SB"/></w:font><w:font w:name="新細明體"><w:altName w:val="PMingLiU"/></w:font></w:fonts>`);
+  }
+  zip.file("word/document.xml", kind === "certificate" ? certificateLayout : kind === "literature-certificate" ? literatureCertificateLayout : envelopeLayout);
   return zip;
 }
 
@@ -288,10 +296,13 @@ export function renderCertificateDocx(
     throw new Error("序號數量與得獎者數量不符");
   }
 
-  const zip = createLayoutPackage("certificate");
+  const literature = payload.templateId === "literature";
+  if (literature && !payload.competitionName?.trim()) throw new Error("請填寫文學季的競賽名稱");
+  const zip = createLayoutPackage(literature ? "literature-certificate" : "certificate");
   const body = splitBody(readDocument(zip));
-  const prototype = body.paragraphs.slice(0, 19);
-  if (prototype.length !== 19) throw new Error("獎狀模板結構已變更");
+  const paragraphCount = literature ? 22 : 19;
+  const prototype = body.paragraphs.slice(0, paragraphCount);
+  if (prototype.length !== paragraphCount) throw new Error("獎狀模板結構已變更");
 
   const image = payload.signerImage ? decodeImage(payload.signerImage) : undefined;
   const relationshipId = image ? registerImage(zip, image) : "";
@@ -303,14 +314,19 @@ export function renderCertificateDocx(
     const serial = options.serials[index];
     if (!serial) throw new Error("序號不可為空");
 
-    let block = replaceFields(prototype.join(""), [
+    const fields: readonly (readonly [string, string])[] = literature ? [
+      ["{{SERIAL}}", serial], ["{{NAME}}", recipient.name],
+      ["{{DEPT_CLASS}}", recipient.deptClass], ["{{EVENT}}", payload.eventName],
+      ["{{COMPETITION}}", payload.competitionName!], ["{{AWARD}}", recipient.award],
+      ["{{SIGNER_TITLE}}", payload.signerTitle], ["{{DATE}}", `中 華 民 國 ${year! - 1911} 年 ${String(month).padStart(2, "0")} 月 ${String(day).padStart(2, "0")} 日`],
+    ] : [
       ["00000000000", serial], ["示例人", recipient.name],
       ["範例科系班級", recipient.deptClass], ["00000000", recipient.studentId],
       ["2026 彩繪生命：北商大生命教育繪畫比賽", payload.eventName],
       ["第一名", recipient.award], ["通識中心主任", payload.signerTitle],
-      ["參加通識教育中心所舉辦之", "參加本校所舉辦之"],
       ["中 華 民 國 115 年 11 月 19 日", rocDate],
-    ]);
+    ];
+    let block = replaceFields(prototype.join(""), fields);
     if (image) block = insertSignerImage(block, payload.signerTitle, relationshipId, 1000 + index);
     return block;
   });
@@ -323,20 +339,13 @@ export function renderCertificateDocx(
 export function renderEnvelopeDocx(payload: EnvelopePayload): Uint8Array {
   const zip = createLayoutPackage("envelope");
   const body = splitBody(readDocument(zip));
-  const prototype = body.paragraphs.slice(0, 2);
-  if (prototype.length !== 2) throw new Error("紅包袋模板結構已變更");
-
-  const referenceEvent = "2026 彩繪生命  北商大生命教育繪畫比賽";
-  const unusedEventPlaceholder = "2020北商文學季";
-  const unusedAwardPlaceholder = "佳 作做";
+  const prototype = body.paragraphs.slice(0, 5);
+  if (prototype.length !== 5) throw new Error("紅包袋模板結構已變更");
 
   const blocks = payload.recipients.map((recipient) => {
     const block = replaceFields(prototype.join(""), [
-      [unusedAwardPlaceholder, ""],
-      [unusedEventPlaceholder, ""],
-      ["優等", recipient.award],
-      [referenceEvent, payload.eventName],
-      ["示例人", recipient.name],
+      ["{{EVENT}}", payload.eventName], ["{{COMPETITION}}", payload.competitionName ?? ""],
+      ["{{AWARD}}", recipient.award], ["{{NAME}}", recipient.name],
     ]);
     return block;
   });

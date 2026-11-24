@@ -7,7 +7,7 @@ export function createSerials(dateValue: string, start: number, count: number): 
       date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day || (year ?? 0) < 1912) {
     throw new Error("獎狀製發日期無效");
   }
-  if (!Number.isInteger(start) || start < 1 || !Number.isInteger(count) || count < 1 || count > 100 || start + count - 1 > 9999) {
+  if (!Number.isInteger(start) || start < 1 || !Number.isInteger(count) || count < 1 || count > 200 || start + count - 1 > 9999) {
     throw new Error("流水號起號須為 1–9999，且本批最後一號不能超過 9999");
   }
   return Array.from({ length: count }, (_, index) => formatSerial(date, start + index));

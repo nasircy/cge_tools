@@ -18,7 +18,8 @@ describe("reference Word formatting and public-data isolation", () => {
   it("keeps the envelope reference typeface and physical dimensions", () => {
     const bytes = renderEnvelopeDocx({ eventName: "測試活動", recipients: [{ name: "測試甲", award: "優等" }] });
     const xml = new PizZip(bytes).file("word/document.xml")!.asText();
-    expect(xml).toContain('w:eastAsia="華康行書體"');
+    expect(xml).toContain('w:eastAsia="標楷體"');
+    expect(xml).toContain('<w:textDirection w:val="tbRl"/>');
     expect(xml).toContain('w:w="5103" w:h="11340"');
     expect(xml).toContain("測試甲");
   });
@@ -33,13 +34,13 @@ it("does not replace placeholder-like text inside user input", () => {
   expect(xml).toContain("優等");
 });
 
-it("uses the supplied signer title without fixed department text in the certificate", () => {
+it("uses the supplied signer title and the requested general-education wording", () => {
   const bytes = renderCertificateDocx({ eventName: "跨域學習成果", date: "2026-11-24", signerTitle: "校長", recipients: [{ name: "測試甲", deptClass: "測試班", studentId: "A01", award: "優等" }] }, { serials: ["11511240001"] });
   const xml = new PizZip(bytes).file("word/document.xml")!.asText();
   expect(xml).toContain("校長");
-  expect(xml).toContain("參加本校所舉辦之");
+  expect(xml).toContain("參加通識教育中心所舉辦之");
   expect(xml).not.toContain("通識中心主任");
-  expect(xml).not.toContain("通識教育中心");
+  expect(xml).not.toContain("參加本校所舉辦之");
   expect(xml).toContain('w:eastAsia="標楷體"');
   expect(xml).not.toMatch(/<w:(?:pBdr|pgBorders)\b/);
 });

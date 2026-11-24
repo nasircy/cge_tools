@@ -70,9 +70,10 @@ describe("renderEnvelopeDocx", () => {
     eventName: "2026 北商文學季",
   };
 
-  it("共同版面套用活動名稱並重編所有 drawing id", () => {
+  it("共同直式版面套用活動、子項目與姓名，每位得獎者分別排版", () => {
     const output = renderEnvelopeDocx({
       ...basePayload,
+      competitionName: "散文創作獎",
       recipients: [
         { name: "王小明", award: "佳作" },
         { name: "陳怡君怡君", award: "甲等" },
@@ -89,9 +90,10 @@ describe("renderEnvelopeDocx", () => {
     expect(xml).not.toContain("優等");
     expect(xml).not.toContain("2020北商文學季");
     expect(xml).not.toContain("2026 彩繪生命");
-    expect(xml.match(/<wp:anchor\b/g)).toHaveLength(10);
-    expect(ids).toHaveLength(10);
-    expect(new Set(ids).size).toBe(10);
+    expect(xml.match(/散文創作獎/g)).toHaveLength(2);
+    expect(xml.match(/<w:sectPr\b/g)).toHaveLength(3);
+    expect(ids).toHaveLength(0);
+    expect(xml).toContain('<w:textDirection w:val="tbRl"/>');
     expect(xml).toMatch(/<w:sz w:val="96"\/>/);
   });
 
@@ -109,6 +111,7 @@ describe("renderEnvelopeDocx", () => {
     expect(xml).not.toContain("優等");
     expect(xml).not.toContain("佳 作做");
     expect(xml).not.toContain("2020北商文學季");
-    expect(xml.match(/<wp:anchor\b/g)).toHaveLength(5);
+    expect(xml).not.toContain("{{COMPETITION}}");
+    expect(xml.match(/<w:sectPr\b/g)).toHaveLength(2);
   });
 });

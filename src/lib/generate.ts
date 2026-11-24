@@ -6,7 +6,7 @@ import type { CertificatePayload, EnvelopePayload } from "./schemas";
 export interface GeneratedFiles { readonly docx: Uint8Array; readonly filename: string; }
 export type GeneratedFileFormat = "docx" | "zip";
 export async function generateCertificateFiles(payload: CertificatePayload, serials: readonly string[]): Promise<GeneratedFiles> {
-  return { docx: renderCertificateDocx(payload, { serials }), filename: `獎狀_${payload.date}_${payload.recipients.length}份` };
+  return { docx: renderCertificateDocx(payload, { serials }), filename: `${payload.templateId === "literature" ? "文學季獎狀" : "獎狀"}_${payload.date}_${payload.recipients.length}份` };
 }
 export async function generateEnvelopeFiles(payload: EnvelopePayload): Promise<GeneratedFiles> {
   return { docx: renderEnvelopeDocx(payload), filename: `紅包袋_${payload.recipients.length}份` };

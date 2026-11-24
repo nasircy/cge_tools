@@ -7,6 +7,7 @@ import type { GeneratedFileFormat, GeneratedFiles } from "../../lib/generate";
 import { createSerials } from "../../lib/serial";
 import { certificatePayloadSchema } from "../../lib/schemas";
 import type { CertificatePayload } from "../../lib/schemas";
+import { certificateTemplates, type CertificateTemplateId } from "../../lib/certificate-templates";
 
 interface RecipientRow {
   readonly id: string;
@@ -38,6 +39,9 @@ function todayIso(): string {
 }
 
 export default function CertificateForm() {
+  const [templateId, setTemplateId] = useState<CertificateTemplateId>("general");
+  const [competitionName, setCompetitionName] = useState("");
+  const literature = templateId === "literature";
   const [eventName, setEventName] = useState("");
   const [date, setDate] = useState(todayIso);
   const [signerTitle, setSignerTitle] = useState("");
@@ -57,7 +61,7 @@ export default function CertificateForm() {
 
   useEffect(() => {
     setOutput(null);
-  }, [eventName, date, signerTitle, signerImage, rows, startSequence]);
+  }, [templateId, competitionName, eventName, date, signerTitle, signerImage, rows, startSequence]);
 
   const updateRow = (id: string, field: Exclude<keyof RecipientRow, "id">, value: string): void => {
     setRows((current) =>
@@ -92,6 +96,8 @@ export default function CertificateForm() {
     setError("");
     try {
       const parsed = certificatePayloadSchema.safeParse({
+        templateId,
+        competitionName,
         eventName,
         date,
         signerTitle,
@@ -159,9 +165,17 @@ export default function CertificateForm() {
         </div>
       ) : null}
 
-      <Card title="基本資料" subtitle="科目／活動名稱、製發日期與署名會套用到每一張獎狀">
+      <Card title="獎狀模板" subtitle="選擇這一批要使用的獎狀格式">
+        <label htmlFor="certificate-template" className="mb-1.5 block text-sm font-semibold">模板選擇</label>
+        <select id="certificate-template" value={templateId} onChange={(event) => setTemplateId(event.target.value as CertificateTemplateId)} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--ink)]">
+          {certificateTemplates.map((template) => <option key={template.id} value={template.id}>{template.label}</option>)}
+        </select>
+      </Card>
+
+      <Card title="基本資料" subtitle="活動名稱、製發日期與署名會套用到每一張獎狀">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="科目／活動名稱" type="text" value={eventName} onChange={(event) => setEventName(event.target.value)} placeholder="請輸入科目或活動名稱" hint="可自由修改，會直接套用至獎狀原稿的科目／活動位置" />
+          <Field label={literature ? "活動總名稱" : "科目／活動名稱"} type="text" value={eventName} onChange={(event) => setEventName(event.target.value)} placeholder={literature ? "例如：2026文學季" : "請輸入科目或活動名稱"} hint="可自由修改，會直接套用至獎狀原稿的科目／活動位置" />
+          {literature && <Field label="比賽子項目" value={competitionName} onChange={(event) => setCompetitionName(event.target.value)} placeholder="例如：散文創作獎" hint="填寫本批次的比賽項目，八項比賽可分批製作" />}
           <Field label="獎狀製發日期" type="date" value={date} onInput={(event) => setDate(event.currentTarget.value)} onChange={(event) => setDate(event.target.value)} hint="字號日期與獎狀落款日期均依此日期產生" />
           <Field label="流水號起號" type="number" min="1" max="9999" step="1" value={startSequence} onChange={(event) => setStartSequence(event.target.value)} hint="依製發日期組合民國年月日及四位序號；不同批次請自行調整起號" />
           <Field label="署名職稱" type="text" value={signerTitle} onChange={(event) => setSignerTitle(event.target.value)} placeholder="例如：校長、主任" hint="請依實際署名填寫" />
@@ -193,7 +207,7 @@ export default function CertificateForm() {
             type="button"
             variant="secondary"
             size="sm"
-            disabled={rows.length >= 100}
+            disabled={rows.length >= 200}
             onClick={() => setRows((current) => [...current, createRecipientRow()])}
           >
             新增一列
@@ -215,10 +229,10 @@ export default function CertificateForm() {
                   移除
                 </Button>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className={`grid gap-3 sm:grid-cols-2 ${literature ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
                 <Field label="姓名" type="text" inputMode="text" value={row.name} onChange={(event) => updateRow(row.id, "name", event.target.value)} hint="可輸入中文、英文或其他文字" />
                 <Field label="科系班級" value={row.deptClass} onChange={(event) => updateRow(row.id, "deptClass", event.target.value)} placeholder="例：五專會資三甲" />
-                <Field label="學號" type="text" inputMode="text" autoComplete="off" value={row.studentId} onChange={(event) => updateRow(row.id, "studentId", event.target.value)} hint="不限位數，可含英文字母；保留前導零" />
+                {!literature && <Field label="學號" type="text" inputMode="text" autoComplete="off" value={row.studentId} onChange={(event) => updateRow(row.id, "studentId", event.target.value)} hint="不限位數，可含英文字母；保留前導零" />}
                 <Field label="獎項" value={row.award} onChange={(event) => updateRow(row.id, "award", event.target.value)} />
               </div>
             </div>
@@ -238,10 +252,7 @@ export default function CertificateForm() {
         </Button>
       </div>
 
-      <Card title="Word 檔案" subtitle="保留範例指定字型與版面，不另外加線條或邊框">
-        <p className="text-sm leading-7 text-[var(--ink-muted)]">原稿字型：標楷體。請使用已安裝該字型的 Word 開啟；工具不會擅自換字型。需要 PDF 時，請在 Word 中選擇「另存為 PDF」。</p>
-        {output && <p role="status" className="mt-3 font-medium">已產生 {rows.length} 份獎狀，可下載 Word 檔案。</p>}
-      </Card>
+      {output && <p role="status" className="font-medium">已產生 {rows.length} 份獎狀，可下載 Word 檔案。</p>}
     </fieldset>
   );
 }
