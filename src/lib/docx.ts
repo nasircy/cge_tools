@@ -325,17 +325,16 @@ export function renderEnvelopeDocx(payload: EnvelopePayload): Uint8Array {
   const prototype = body.paragraphs.slice(0, 2);
   if (prototype.length !== 2) throw new Error("紅包袋模板結構已變更");
 
-  const lifeEvent = "2026 彩繪生命  北商大生命教育繪畫比賽";
-  const literaryEvent = "2020北商文學季";
-  const literaryAward = "佳 作做";
+  const referenceEvent = "2026 彩繪生命  北商大生命教育繪畫比賽";
+  const unusedEventPlaceholder = "2020北商文學季";
+  const unusedAwardPlaceholder = "佳 作做";
 
   const blocks = payload.recipients.map((recipient) => {
-    const life = payload.templateId === "envelope-life";
     const block = replaceFields(prototype.join(""), [
-      [literaryAward, life ? "" : recipient.award],
-      [literaryEvent, life ? "" : payload.eventName],
-      ["優等", life ? recipient.award : ""],
-      [lifeEvent, life ? payload.eventName : ""],
+      [unusedAwardPlaceholder, ""],
+      [unusedEventPlaceholder, ""],
+      ["優等", recipient.award],
+      [referenceEvent, payload.eventName],
       ["示例人", recipient.name],
     ]);
     return block;

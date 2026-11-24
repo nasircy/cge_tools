@@ -5,7 +5,6 @@ import Field from "../ui/Field";
 import { pushToast } from "../ui/toast-store";
 import type { GeneratedFileFormat, GeneratedFiles } from "../../lib/generate";
 import { envelopePayloadSchema } from "../../lib/schemas";
-import type { EnvelopePayload } from "../../lib/schemas";
 
 interface EnvelopeRow {
   readonly id: string;
@@ -13,40 +12,16 @@ interface EnvelopeRow {
   readonly award: string;
 }
 
-interface TemplateOption {
-  readonly id: EnvelopePayload["templateId"];
-  readonly label: string;
-  readonly eventName: string;
-  readonly award: string;
-}
-
-
-const templateOptions: readonly TemplateOption[] = [
-  {
-    id: "envelope-life",
-    label: "生命教育紅包袋",
-    eventName: "生命教育繪畫比賽",
-    award: "優等",
-  },
-  {
-    id: "envelope-literary",
-    label: "北商文學季紅包袋",
-    eventName: "北商文學季",
-    award: "佳作",
-  },
-];
-
 let rowCounter = 0;
 
-function createRow(award: string): EnvelopeRow {
+function createRow(): EnvelopeRow {
   rowCounter += 1;
-  return { id: `envelope-${rowCounter}`, name: "", award };
+  return { id: `envelope-${rowCounter}`, name: "", award: "優等" };
 }
 
 export default function EnvelopeForm() {
-  const [templateId, setTemplateId] = useState<EnvelopePayload["templateId"]>("envelope-life");
-  const [eventName, setEventName] = useState(templateOptions[0]?.eventName ?? "");
-  const [rows, setRows] = useState<readonly EnvelopeRow[]>(() => [createRow(templateOptions[0]?.award ?? "優等")]);
+  const [eventName, setEventName] = useState("");
+  const [rows, setRows] = useState<readonly EnvelopeRow[]>(() => [createRow()]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [output, setOutput] = useState<GeneratedFiles | null>(null);
@@ -54,27 +29,7 @@ export default function EnvelopeForm() {
 
   useEffect(() => {
     setOutput(null);
-  }, [templateId, eventName, rows]);
-
-  const selectedOption = templateOptions.find((option) => option.id === templateId) ?? templateOptions[0];
-
-  const selectTemplate = (nextTemplateId: EnvelopePayload["templateId"]): void => {
-    const next = templateOptions.find((option) => option.id === nextTemplateId);
-    if (!next) return;
-    setTemplateId(next.id);
-    setEventName((current) =>
-      current === "" || templateOptions.some((option) => option.eventName === current)
-        ? next.eventName
-        : current,
-    );
-    setRows((current) =>
-      current.map((row) =>
-        templateOptions.some((option) => option.award === row.award)
-          ? { ...row, award: next.award }
-          : row,
-      ),
-    );
-  };
+  }, [eventName, rows]);
 
   const updateRow = (id: string, field: Exclude<keyof EnvelopeRow, "id">, value: string): void => {
     setRows((current) =>
@@ -88,7 +43,6 @@ export default function EnvelopeForm() {
     setError("");
     try {
       const parsed = envelopePayloadSchema.safeParse({
-        templateId,
         eventName,
         recipients: rows.map((row) => ({ name: row.name, award: row.award })),
       });
@@ -145,29 +99,8 @@ export default function EnvelopeForm() {
         </div>
       ) : null}
 
-      <Card title="模板選擇" subtitle="依活動選用對應的原始 Word 紅包袋版面">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <fieldset className="min-w-0">
-            <legend className="mb-1.5 text-sm font-semibold text-[var(--ink)]">紅包袋版型</legend>
-            <div className="grid grid-cols-2 gap-2">
-              {templateOptions.map((option) => (
-                <label
-                  key={option.id}
-                  className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${templateId === option.id ? "border-navy bg-[var(--surface-soft)] font-semibold text-[var(--ink)]" : "border-[var(--border)] bg-[var(--surface)] text-[var(--ink-muted)]"}`}
-                >
-                  <input
-                    type="radio"
-                    name="envelope-template"
-                    value={option.id}
-                    checked={templateId === option.id}
-                    onChange={() => selectTemplate(option.id)}
-                    className="shrink-0 accent-navy"
-                  />
-                  <span>{option.label}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
+      <Card title="基本資料" subtitle="科目／活動名稱會套用到每一份紅包袋">
+        <div className="grid gap-4">
           <Field
             label="科目／活動名稱"
             type="text"
@@ -181,14 +114,14 @@ export default function EnvelopeForm() {
 
       <Card
         title="得獎者"
-        subtitle={`共 ${rows.length} 位，目前模板：${selectedOption?.label ?? ""}`}
+        subtitle={`共 ${rows.length} 位`}
         action={
           <Button
             type="button"
             variant="secondary"
             size="sm"
             disabled={rows.length >= 100}
-            onClick={() => setRows((current) => [...current, createRow(selectedOption?.award ?? "優等")])}
+            onClick={() => setRows((current) => [...current, createRow()])}
           >
             新增一列
           </Button>

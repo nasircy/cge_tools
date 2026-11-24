@@ -13,6 +13,6 @@ describe("browser-only serial numbering", () => {
   });
   it("validates recipient data before generating files", () => {
     expect(certificatePayloadSchema.safeParse({ eventName: "活動", date: "2026-02-30", signerTitle: "主任", recipients: [{ name: "測試甲", deptClass: "測試班", studentId: "00000001", award: "佳作" }] }).success).toBe(false);
-    expect(envelopePayloadSchema.safeParse({ templateId: "envelope-life", eventName: "活動", recipients: [] }).success).toBe(false);
+    expect(envelopePayloadSchema.safeParse({ eventName: "活動", recipients: [] }).success).toBe(false);
   });
 });

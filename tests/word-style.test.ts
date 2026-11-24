@@ -16,7 +16,7 @@ describe("reference Word formatting and public-data isolation", () => {
     expect(xml).not.toContain("示例人");
   });
   it("keeps the envelope reference typeface and physical dimensions", () => {
-    const bytes = renderEnvelopeDocx({ templateId: "envelope-life", eventName: "測試活動", recipients: [{ name: "測試甲", award: "優等" }] });
+    const bytes = renderEnvelopeDocx({ eventName: "測試活動", recipients: [{ name: "測試甲", award: "優等" }] });
     const xml = new PizZip(bytes).file("word/document.xml")!.asText();
     expect(xml).toContain('w:eastAsia="華康行書體"');
     expect(xml).toContain('w:w="5103" w:h="11340"');

@@ -43,8 +43,8 @@ describe("editable subjects and issue-date serials in downloaded Word documents"
     expect(xml).toContain("中 華 民 國 115 年 12 月 5 日");
     expect(xml).not.toContain("11602030007");
   });
-  it.each(["envelope-life", "envelope-literary"] as const)("uses a custom subject and English name in %s", templateId => {
-    const payload = envelopePayloadSchema.parse({ templateId, eventName: "創意寫作", recipients: [{ name: "Alex Chen", award: "佳作" }] });
+  it("uses the shared red-envelope layout for a custom subject and English name", () => {
+    const payload = envelopePayloadSchema.parse({ eventName: "創意寫作", recipients: [{ name: "Alex Chen", award: "佳作" }] });
     const xml = documentXml(renderEnvelopeDocx(payload));
     expect(xml).toContain("創意寫作");
     expect(xml).toContain("Alex Chen");

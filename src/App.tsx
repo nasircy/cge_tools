@@ -76,7 +76,7 @@ export default function App() {
         </header>
         <main id="tool-main" className="system-main"><div className="system-content tools-content">
           <section hidden={view !== "certificates"} aria-labelledby="certificate-title"><div className="tool-heading"><h1 id="certificate-title">獎狀製作</h1><p>填寫名單與頒發資料，產生與範例相同樣式的 Word 檔案。</p></div><CertificateForm /></section>
-          <section hidden={view !== "envelopes"} aria-labelledby="envelope-title"><div className="tool-heading"><h1 id="envelope-title">紅包袋製作</h1><p>選擇版型、填寫名單，產生與範例相同樣式的 Word 檔案。</p></div><EnvelopeForm /></section>
+          <section hidden={view !== "envelopes"} aria-labelledby="envelope-title"><div className="tool-heading"><h1 id="envelope-title">紅包袋製作</h1><p>填寫科目／活動名稱與名單，產生與範例相同樣式的 Word 檔案。</p></div><EnvelopeForm /></section>
           <p className="tool-privacy">免登入。名單與簽章圖只在此分頁處理，不上傳、不儲存；每批最多 100 位。關閉前請先下載檔案。</p>
           <footer className="tool-footer"><a href="https://nasirlin.net" rel="noreferrer">Nasir Lin</a> · <a href="https://github.com/nasircy/cge_tools" rel="noreferrer">nasircy / cge_tools</a></footer>
         </div></main>

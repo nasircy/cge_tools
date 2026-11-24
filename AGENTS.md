@@ -3,6 +3,7 @@
 - The displayed product name is 助理行政小工具. Keep the NTUB campus imagery, but do not put 國立臺北商業大學｜通識教育中心 in the footer.
 
 - Keep the existing NTUB campus background, university masthead, homepage and tool sidebar. Do not redesign them without an explicit user request.
+- The red-envelope tool has one shared layout. Do not add event-specific templates, dropdowns, or separate template options.
 - This public repository provides exactly two tools: certificate creation and red-envelope creation. No sign-in, backend, database, administrative records, or borrowing workflow.
 - All recipient data and signature images must remain in browser memory. Never upload or persist them.
 - Never commit original Word/sample documents, generated documents, real recipient lists, signature images, personal account data, private keys, service-account JSON, tokens, or proprietary font files. Do not copy the private project's Git history.

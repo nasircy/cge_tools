@@ -26,7 +26,6 @@ export const envelopeRecipientSchema = z.object({
   award: z.string().trim().min(1, "等第為必填").max(40, "等第最多 40 字"),
 });
 export const envelopePayloadSchema = z.object({
-  templateId: z.enum(["envelope-life", "envelope-literary"]),
   eventName: z.string().trim().min(1, "科目／活動名稱為必填").max(100, "科目／活動名稱最多 100 字"),
   recipients: z.array(envelopeRecipientSchema).min(1, "至少需一位得獎者").max(MAX_BATCH, "每批最多 100 位"),
 });

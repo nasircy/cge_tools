@@ -66,14 +66,13 @@ describe("renderCertificateDocx", () => {
 });
 
 describe("renderEnvelopeDocx", () => {
-  const basePayload: Omit<EnvelopePayload, "templateId" | "recipients"> = {
+  const basePayload: Omit<EnvelopePayload, "recipients"> = {
     eventName: "2026 北商文學季",
   };
 
-  it("文學季版本清空生命教育文字方塊並重編所有 drawing id", () => {
+  it("共同版面套用活動名稱並重編所有 drawing id", () => {
     const output = renderEnvelopeDocx({
       ...basePayload,
-      templateId: "envelope-literary",
       recipients: [
         { name: "王小明", award: "佳作" },
         { name: "陳怡君怡君", award: "甲等" },
@@ -96,10 +95,9 @@ describe("renderEnvelopeDocx", () => {
     expect(xml).toMatch(/<w:sz w:val="96"\/>/);
   });
 
-  it("生命教育版本清空文學季文字方塊並置換等第", () => {
+  it("共同版面清空未使用的原稿示例並置換等第", () => {
     const output = renderEnvelopeDocx({
       ...basePayload,
-      templateId: "envelope-life",
       eventName: "2026 彩繪生命：北商大生命教育繪畫比賽",
       recipients: [{ name: "張志明", award: "特優" }],
     });
