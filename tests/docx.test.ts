@@ -14,7 +14,7 @@ describe("renderCertificateDocx", () => {
   const payload: CertificatePayload = {
     eventName: "2026 彩繪生命：北商大生命教育繪畫比賽",
     date: "2026-01-05",
-    signerTitle: "通識中心主任",
+    signerTitle: "校長",
     recipients: [
       { name: "王小明", deptClass: "五專資管三甲", studentId: "11351001", award: "第一名" },
       { name: "李美玲", deptClass: "四技企管二甲", studentId: "11351002", award: "第二名" },

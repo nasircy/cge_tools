@@ -308,6 +308,7 @@ export function renderCertificateDocx(
       ["範例科系班級", recipient.deptClass], ["00000000", recipient.studentId],
       ["2026 彩繪生命：北商大生命教育繪畫比賽", payload.eventName],
       ["第一名", recipient.award], ["通識中心主任", payload.signerTitle],
+      ["參加通識教育中心所舉辦之", "參加本校所舉辦之"],
       ["中 華 民 國 115 年 11 月 19 日", rocDate],
     ]);
     if (image) block = insertSignerImage(block, payload.signerTitle, relationshipId, 1000 + index);

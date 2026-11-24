@@ -45,7 +45,7 @@ export default function App() {
         <header className="university-header">
           <div className="portal-width university-masthead">
             <a className="university-brand" href="#home" aria-label="國立臺北商業大學，系統首頁"><img src={emblem} alt="" width="48" height="48" /><strong>國立臺北商業大學</strong></a>
-            <a className="university-official" href="https://cge.ntub.edu.tw/" rel="noreferrer">通識教育中心網站</a>
+            <a className="university-official" href="https://www.ntub.edu.tw/" target="_blank" rel="noopener noreferrer">學校網站</a>
           </div>
           <nav className="university-navigation" aria-label="首頁導覽"><div className="portal-width">
             <a href="#home" aria-current="page">首頁</a>
@@ -66,7 +66,7 @@ export default function App() {
           <div className="system-brand"><a href="#home">助理行政小工具</a><button id="drawer-close" type="button" onClick={() => setDrawerOpen(false)} aria-label="關閉側邊欄" className="system-icon lg:hidden"><X size={20} /></button></div>
           <div className="system-profile"><span className="system-avatar"><img src={emblem} alt="國立臺北商業大學校徽" width="40" height="40" /></span><strong>助理行政小工具</strong><span className="text-sm text-[var(--ink-muted)]">文件製作工具</span></div>
           <nav aria-label="工具側邊導覽" className="system-menu"><div><p>工作區</p><a href="#home"><House size={17} aria-hidden="true" /><span>系統首頁</span></a>{tools.map(({ id, label, icon: Icon }) => <a key={id} href={`#${id}`} onClick={() => setDrawerOpen(false)} aria-current={view === id ? "page" : undefined}><Icon size={17} aria-hidden="true" /><span>{label}</span></a>)}</div></nav>
-          <a className="system-sidebar-footer" href="https://cge.ntub.edu.tw/" rel="noreferrer">通識教育中心網站</a>
+          <a className="system-sidebar-footer" href="https://www.ntub.edu.tw/" target="_blank" rel="noopener noreferrer">學校網站</a>
         </aside>
         <header className="system-topbar">
           <button id="menu-toggle" type="button" onClick={() => setDrawerOpen(true)} aria-label="開啟選單" aria-controls="system-sidebar" aria-expanded={drawerOpen} className="system-icon lg:hidden"><Menu size={20} /></button>

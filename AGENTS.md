@@ -1,6 +1,7 @@
 # Project constraints
 
 - The displayed product name is 助理行政小工具. Keep the NTUB campus imagery, but do not put 國立臺北商業大學｜通識教育中心 in the footer.
+- Do not prefill a department-specific signer title. Use the school homepage https://www.ntub.edu.tw/ for links labelled 學校網站; do not link to a department website.
 
 - Keep the existing NTUB campus background, university masthead, homepage and tool sidebar. Do not redesign them without an explicit user request.
 - The red-envelope tool has one shared layout. Do not add event-specific templates, dropdowns, or separate template options.

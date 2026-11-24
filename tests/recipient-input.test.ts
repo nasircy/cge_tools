@@ -23,7 +23,7 @@ describe("free-text recipient fields", () => {
 describe("editable subjects and issue-date serials in downloaded Word documents", () => {
   it("uses the edited subject, English name and text ID with the selected issue date", () => {
     const payload = certificatePayloadSchema.parse({
-      eventName: "英語表達 A&B", date: "2027-02-03", signerTitle: "通識中心主任",
+      eventName: "英語表達 A&B", date: "2027-02-03", signerTitle: "校長",
       recipients: [{ ...recipient, name: "Alex Chen", studentId: "A00123" }],
     });
     const xml = documentXml(renderCertificateDocx(payload, { serials: createSerials(payload.date, 7, payload.recipients.length) }));
@@ -35,7 +35,7 @@ describe("editable subjects and issue-date serials in downloaded Word documents"
   });
   it("changes the serial date and printed date together when the issue date changes", () => {
     const payload = certificatePayloadSchema.parse({
-      eventName: "國文寫作", date: "2026-12-05", signerTitle: "通識中心主任",
+      eventName: "國文寫作", date: "2026-12-05", signerTitle: "校長",
       recipients: [recipient],
     });
     const xml = documentXml(renderCertificateDocx(payload, { serials: createSerials(payload.date, 7, 1) }));

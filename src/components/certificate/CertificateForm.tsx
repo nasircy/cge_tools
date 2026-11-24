@@ -40,7 +40,7 @@ function todayIso(): string {
 export default function CertificateForm() {
   const [eventName, setEventName] = useState("");
   const [date, setDate] = useState(todayIso);
-  const [signerTitle, setSignerTitle] = useState("通識中心主任");
+  const [signerTitle, setSignerTitle] = useState("");
   const [signerImage, setSignerImage] = useState<string | undefined>();
   const [rows, setRows] = useState<readonly RecipientRow[]>(() => [createRecipientRow()]);
   const [startSequence, setStartSequence] = useState("1");
@@ -164,7 +164,7 @@ export default function CertificateForm() {
           <Field label="科目／活動名稱" type="text" value={eventName} onChange={(event) => setEventName(event.target.value)} placeholder="請輸入科目或活動名稱" hint="可自由修改，會直接套用至獎狀原稿的科目／活動位置" />
           <Field label="獎狀製發日期" type="date" value={date} onInput={(event) => setDate(event.currentTarget.value)} onChange={(event) => setDate(event.target.value)} hint="字號日期與獎狀落款日期均依此日期產生" />
           <Field label="流水號起號" type="number" min="1" max="9999" step="1" value={startSequence} onChange={(event) => setStartSequence(event.target.value)} hint="依製發日期組合民國年月日及四位序號；不同批次請自行調整起號" />
-          <Field label="署名職稱" value={signerTitle} onChange={(event) => setSignerTitle(event.target.value)} />
+          <Field label="署名職稱" type="text" value={signerTitle} onChange={(event) => setSignerTitle(event.target.value)} placeholder="例如：校長、主任" hint="請依實際署名填寫" />
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="font-medium text-[var(--ink)]">簽章圖（選用）</span>
             <input
