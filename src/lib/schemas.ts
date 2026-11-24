@@ -32,14 +32,15 @@ export const certificatePayloadSchema = z.object({
   }
 });
 export const envelopeRecipientSchema = z.object({
-  name: z.string().trim().min(1, "姓名為必填").max(40, "姓名最多 40 字"),
+  name: z.string().trim().max(40, "姓名最多 40 字"),
   award: z.string().trim().min(1, "等第為必填").max(40, "等第最多 40 字"),
+  quantity: z.number().int("數量須為整數").min(1, "數量至少 1 份").max(MAX_BATCH, "每批最多 200 頁").optional(),
 });
 export const envelopePayloadSchema = z.object({
   competitionName: z.string().trim().max(60, "比賽子項目最多 60 字").optional(),
   eventName: z.string().trim().min(1, "科目／活動名稱為必填").max(100, "科目／活動名稱最多 100 字"),
   recipients: z.array(envelopeRecipientSchema).min(1, "至少需一位得獎者").max(MAX_BATCH, "每批最多 200 頁"),
-});
+}).refine(payload => payload.recipients.reduce((sum, row) => sum + (row.quantity ?? 1), 0) <= MAX_BATCH, "紅包袋合計最多 200 份，請分批製作");
 export type CertificatePayload = z.infer<typeof certificatePayloadSchema>;
 export type EnvelopePayload = z.infer<typeof envelopePayloadSchema>;
 export type Recipient = z.infer<typeof recipientSchema>;

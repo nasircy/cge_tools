@@ -9,7 +9,7 @@ export async function generateCertificateFiles(payload: CertificatePayload, seri
   return { docx: renderCertificateDocx(payload, { serials }), filename: `${payload.templateId === "literature" ? "文學季獎狀" : "獎狀"}_${payload.date}_${payload.recipients.length}份` };
 }
 export async function generateEnvelopeFiles(payload: EnvelopePayload): Promise<GeneratedFiles> {
-  return { docx: renderEnvelopeDocx(payload), filename: `紅包袋_${payload.recipients.length}份` };
+  return { docx: renderEnvelopeDocx(payload), filename: `紅包袋_${payload.recipients.reduce((sum, row) => sum + (row.quantity ?? 1), 0)}份` };
 }
 export async function downloadGeneratedFiles(files: GeneratedFiles, format: GeneratedFileFormat): Promise<void> {
   if (format === "docx") {

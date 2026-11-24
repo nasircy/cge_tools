@@ -8,6 +8,7 @@ import { createSerials } from "../../lib/serial";
 import { certificatePayloadSchema } from "../../lib/schemas";
 import type { CertificatePayload } from "../../lib/schemas";
 import { certificateTemplates, type CertificateTemplateId } from "../../lib/certificate-templates";
+import RecipientImport from "../RecipientImport";
 
 interface RecipientRow {
   readonly id: string;
@@ -214,6 +215,18 @@ export default function CertificateForm() {
           </Button>
         }
       >
+        <RecipientImport
+          kind={templateId}
+          existingCount={rows.filter(row => row.name.trim() || row.deptClass.trim() || row.studentId.trim() || row.award !== "第一名").length}
+          onApply={(imported, append) => {
+            setRows(current => [
+              ...(append ? current.filter(row => row.name.trim() || row.deptClass.trim() || row.studentId.trim() || row.award !== "第一名") : []),
+              ...imported.map(row => ({ ...createRecipientRow(), ...row })),
+            ]);
+            setError("");
+            setOutput(null);
+          }}
+        />
         <div className="space-y-4">
           {rows.map((row, index) => (
             <div key={row.id} className="rounded-panel border border-[var(--border)] bg-[var(--surface-soft)] p-4">

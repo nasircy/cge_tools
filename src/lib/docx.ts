@@ -337,17 +337,19 @@ export function renderCertificateDocx(
 }
 
 export function renderEnvelopeDocx(payload: EnvelopePayload): Uint8Array {
+  const count = payload.recipients.reduce((sum, row) => sum + (row.quantity ?? 1), 0);
+  if (!Number.isInteger(count) || count < 1 || count > 200 || payload.recipients.some(row => !Number.isInteger(row.quantity ?? 1) || (row.quantity ?? 1) < 1)) throw new Error("紅包袋數量須為正整數，合計最多 200 份");
   const zip = createLayoutPackage("envelope");
   const body = splitBody(readDocument(zip));
   const prototype = body.paragraphs.slice(0, 5);
   if (prototype.length !== 5) throw new Error("紅包袋模板結構已變更");
 
-  const blocks = payload.recipients.map((recipient) => {
+  const blocks = payload.recipients.flatMap((recipient) => {
     const block = replaceFields(prototype.join(""), [
       ["{{EVENT}}", payload.eventName], ["{{COMPETITION}}", payload.competitionName ?? ""],
       ["{{AWARD}}", recipient.award], ["{{NAME}}", recipient.name],
     ]);
-    return block;
+    return Array.from({ length: recipient.quantity ?? 1 }, () => block);
   });
 
   const document = renumberDrawingIds(`${body.prefix}${blocks.join("")}${body.suffix}${body.tail}`);

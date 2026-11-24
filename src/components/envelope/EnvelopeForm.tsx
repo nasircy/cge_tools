@@ -5,18 +5,20 @@ import Field from "../ui/Field";
 import { pushToast } from "../ui/toast-store";
 import type { GeneratedFileFormat, GeneratedFiles } from "../../lib/generate";
 import { envelopePayloadSchema } from "../../lib/schemas";
+import RecipientImport from "../RecipientImport";
 
 interface EnvelopeRow {
   readonly id: string;
   readonly name: string;
   readonly award: string;
+  readonly quantity: string;
 }
 
 let rowCounter = 0;
 
 function createRow(): EnvelopeRow {
   rowCounter += 1;
-  return { id: `envelope-${rowCounter}`, name: "", award: "優等" };
+  return { id: `envelope-${rowCounter}`, name: "", award: "優等", quantity: "1" };
 }
 
 export default function EnvelopeForm() {
@@ -26,6 +28,7 @@ export default function EnvelopeForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [output, setOutput] = useState<GeneratedFiles | null>(null);
+  const totalQuantity = rows.reduce((sum, row) => sum + (Number(row.quantity) || 0), 0);
 
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export default function EnvelopeForm() {
       const parsed = envelopePayloadSchema.safeParse({
         eventName,
         competitionName,
-        recipients: rows.map((row) => ({ name: row.name, award: row.award })),
+        recipients: rows.map((row) => ({ name: row.name, award: row.award, quantity: Number(row.quantity) })),
       });
       if (!parsed.success) {
         const message = parsed.error.issues[0]?.message ?? "欄位驗證失敗";
@@ -60,7 +63,7 @@ export default function EnvelopeForm() {
       const files = await generateEnvelopeFiles(payload);
 
       setOutput(files);
-      pushToast("success", `已產生 ${payload.recipients.length} 份紅包袋`);
+      pushToast("success", `已產生 ${totalQuantity} 份紅包袋`);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "紅包袋產生失敗";
       setError(message);
@@ -117,7 +120,7 @@ export default function EnvelopeForm() {
 
       <Card
         title="得獎者"
-        subtitle={`共 ${rows.length} 位`}
+        subtitle={`共 ${rows.length} 筆，合計 ${totalQuantity} 份`}
         action={
           <Button
             type="button"
@@ -130,11 +133,23 @@ export default function EnvelopeForm() {
           </Button>
         }
       >
+        <RecipientImport
+          kind="envelope"
+          existingCount={totalQuantity}
+          onApply={(imported, append) => {
+            setRows(current => [
+              ...(append ? current : []),
+              ...imported.map(row => ({ ...createRow(), name: row.name, award: row.award, quantity: String(row.quantity) })),
+            ]);
+            setError("");
+            setOutput(null);
+          }}
+        />
         <div className="space-y-4">
           {rows.map((row, index) => (
             <div key={row.id} className="rounded-panel border border-[var(--border)] bg-[var(--surface-soft)] p-4">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-semibold text-[var(--ink)]">第 {index + 1} 位</span>
+                <span className="text-sm font-semibold text-[var(--ink)]">第 {index + 1} 筆</span>
                 <Button
                   type="button"
                   variant="ghost"
@@ -145,9 +160,9 @@ export default function EnvelopeForm() {
                   移除
                 </Button>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <Field
-                  label="姓名"
+                  label="姓名（選填）"
                   type="text"
                   inputMode="text"
                   value={row.name}
@@ -158,6 +173,7 @@ export default function EnvelopeForm() {
                   value={row.award}
                   onChange={(event) => updateRow(row.id, "award", event.target.value)}
                 />
+                <Field label="數量" type="number" min="1" max="200" step="1" value={row.quantity} onChange={event => updateRow(row.id, "quantity", event.target.value)} />
               </div>
             </div>
           ))}
@@ -176,7 +192,7 @@ export default function EnvelopeForm() {
         </Button>
       </div>
 
-      {output && <p role="status" className="font-medium">已產生 {rows.length} 份紅包袋，可下載 Word 檔案。</p>}
+      {output && <p role="status" className="font-medium">已產生 {totalQuantity} 份紅包袋，可下載 Word 檔案。</p>}
     </fieldset>
   );
 }
