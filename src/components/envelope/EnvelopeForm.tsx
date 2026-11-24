@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
 import Field from "../ui/Field";
@@ -58,8 +58,8 @@ export default function EnvelopeForm() {
 
   const selectedOption = templateOptions.find((option) => option.id === templateId) ?? templateOptions[0];
 
-  const handleTemplateChange = (event: ChangeEvent<HTMLSelectElement>): void => {
-    const next = templateOptions.find((option) => option.id === event.target.value);
+  const selectTemplate = (nextTemplateId: EnvelopePayload["templateId"]): void => {
+    const next = templateOptions.find((option) => option.id === nextTemplateId);
     if (!next) return;
     setTemplateId(next.id);
     setEventName((current) =>
@@ -147,25 +147,34 @@ export default function EnvelopeForm() {
 
       <Card title="模板選擇" subtitle="依活動選用對應的原始 Word 紅包袋版面">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="font-medium text-[var(--ink)]">紅包袋模板</span>
-            <select
-              value={templateId}
-              onChange={handleTemplateChange}
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--ink)]"
-            >
+          <fieldset className="min-w-0">
+            <legend className="mb-1.5 text-sm font-semibold text-[var(--ink)]">紅包袋版型</legend>
+            <div className="grid grid-cols-2 gap-2">
               {templateOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
-                </option>
+                <label
+                  key={option.id}
+                  className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${templateId === option.id ? "border-navy bg-[var(--surface-soft)] font-semibold text-[var(--ink)]" : "border-[var(--border)] bg-[var(--surface)] text-[var(--ink-muted)]"}`}
+                >
+                  <input
+                    type="radio"
+                    name="envelope-template"
+                    value={option.id}
+                    checked={templateId === option.id}
+                    onChange={() => selectTemplate(option.id)}
+                    className="shrink-0 accent-navy"
+                  />
+                  <span>{option.label}</span>
+                </label>
               ))}
-            </select>
-          </label>
+            </div>
+          </fieldset>
           <Field
-            label="活動名稱"
+            label="科目／活動名稱"
+            type="text"
             value={eventName}
             onChange={(event) => setEventName(event.target.value)}
-            placeholder="列印在紅包袋上的活動名稱"
+            placeholder="列印在紅包袋上的科目或活動名稱"
+            hint="可自由修改，會直接套用到紅包袋"
           />
         </div>
       </Card>
@@ -203,6 +212,8 @@ export default function EnvelopeForm() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field
                   label="姓名"
+                  type="text"
+                  inputMode="text"
                   value={row.name}
                   onChange={(event) => updateRow(row.id, "name", event.target.value)}
                 />

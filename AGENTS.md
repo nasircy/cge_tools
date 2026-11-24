@@ -1,5 +1,7 @@
 # Project constraints
 
+- The displayed product name is 助理行政小工具. Keep the NTUB campus imagery, but do not put 國立臺北商業大學｜通識教育中心 in the footer.
+
 - Keep the existing NTUB campus background, university masthead, homepage and tool sidebar. Do not redesign them without an explicit user request.
 - This public repository provides exactly two tools: certificate creation and red-envelope creation. No sign-in, backend, database, administrative records, or borrowing workflow.
 - All recipient data and signature images must remain in browser memory. Never upload or persist them.

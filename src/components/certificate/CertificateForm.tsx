@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
 import Field from "../ui/Field";
@@ -47,7 +47,13 @@ export default function CertificateForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [output, setOutput] = useState<GeneratedFiles | null>(null);
-
+  const serialPreview = useMemo(() => {
+    try {
+      return createSerials(date, Number(startSequence), rows.length);
+    } catch {
+      return null;
+    }
+  }, [date, startSequence, rows.length]);
 
   useEffect(() => {
     setOutput(null);
@@ -153,11 +159,11 @@ export default function CertificateForm() {
         </div>
       ) : null}
 
-      <Card title="基本資料" subtitle="活動名稱、日期與署名會套用到每一張獎狀">
+      <Card title="基本資料" subtitle="科目／活動名稱、製發日期與署名會套用到每一張獎狀">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="活動名稱" value={eventName} onChange={(event) => setEventName(event.target.value)} placeholder="例：2026 生命教育繪畫比賽" />
-          <Field label="頒發日期" type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-          <Field label="流水號起號" type="number" min="1" max="9999" step="1" value={startSequence} onChange={(event) => setStartSequence(event.target.value)} hint="每批自行設定起號，避免與其他批次重複" />
+          <Field label="科目／活動名稱" type="text" value={eventName} onChange={(event) => setEventName(event.target.value)} placeholder="請輸入科目或活動名稱" hint="可自由修改，會直接套用至獎狀原稿的科目／活動位置" />
+          <Field label="獎狀製發日期" type="date" value={date} onInput={(event) => setDate(event.currentTarget.value)} onChange={(event) => setDate(event.target.value)} hint="字號日期與獎狀落款日期均依此日期產生" />
+          <Field label="流水號起號" type="number" min="1" max="9999" step="1" value={startSequence} onChange={(event) => setStartSequence(event.target.value)} hint="依製發日期組合民國年月日及四位序號；不同批次請自行調整起號" />
           <Field label="署名職稱" value={signerTitle} onChange={(event) => setSignerTitle(event.target.value)} />
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="font-medium text-[var(--ink)]">簽章圖（選用）</span>
@@ -171,6 +177,12 @@ export default function CertificateForm() {
             {signerImage && <span className="flex items-center gap-3"><img src={signerImage} alt="已選取的簽章圖" className="h-12 max-w-40 object-contain" /><button type="button" onClick={() => setSignerImage(undefined)} className="text-sm underline">移除簽章</button></span>}
           </label>
         </div>
+        <p className="mt-4 text-sm leading-7 text-[var(--ink-muted)]" aria-live="polite" aria-atomic="true">
+          {serialPreview ? <>
+            字號預覽：北商大通字第{serialPreview[0]}號
+            {serialPreview.length > 1 && <> ～ 北商大通字第{serialPreview[serialPreview.length - 1]}號</>}
+          </> : "請填寫有效的製發日期及流水號起號以預覽字號。"}
+        </p>
       </Card>
 
       <Card
@@ -204,9 +216,9 @@ export default function CertificateForm() {
                 </Button>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Field label="姓名" value={row.name} onChange={(event) => updateRow(row.id, "name", event.target.value)} />
+                <Field label="姓名" type="text" inputMode="text" value={row.name} onChange={(event) => updateRow(row.id, "name", event.target.value)} hint="可輸入中文、英文或其他文字" />
                 <Field label="科系班級" value={row.deptClass} onChange={(event) => updateRow(row.id, "deptClass", event.target.value)} placeholder="例：五專會資三甲" />
-                <Field label="學號" value={row.studentId} onChange={(event) => updateRow(row.id, "studentId", event.target.value)} />
+                <Field label="學號" type="text" inputMode="text" autoComplete="off" value={row.studentId} onChange={(event) => updateRow(row.id, "studentId", event.target.value)} hint="不限位數，可含英文字母；保留前導零" />
                 <Field label="獎項" value={row.award} onChange={(event) => updateRow(row.id, "award", event.target.value)} />
               </div>
             </div>
